@@ -52,38 +52,38 @@
   <div class="container register-form">
     <div class="form">
       <div class="note">
-        <p>Update Customer Details</p>
+        <p>Обновите данные о клиенте</p>
       </div>
       <div class="form-content">
         <div class="row">
           <div class="col-md-6">
             <div class="form-group">
-              {% render_field userForm.first_name class="form-control" placeholder="First Name" %}
+              {% render_field userForm.first_name class="form-control" placeholder="Имя" %}
             </div>
             <div class="form-group">
-              {% render_field userForm.username class="form-control" placeholder="Username" %}
+              {% render_field userForm.username class="form-control" placeholder="Логин" %}
             </div>
             <div class="form-group">
-              {% render_field customerForm.mobile class="form-control" placeholder="Mobile" %}
+              {% render_field customerForm.mobile class="form-control" placeholder="Номер телефона" %}
             </div>
             <div class="form-group">
-              {% render_field customerForm.profile_pic class="form-control" placeholder="Profile Picture" %}
+              {% render_field customerForm.profile_pic class="form-control" placeholder="Аватар" %}
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              {% render_field userForm.last_name class="form-control" placeholder="Last Name" %}
+              {% render_field userForm.last_name class="form-control" placeholder="Фамилия" %}
             </div>
             <div class="form-group">
-              {% render_field userForm.password class="form-control" placeholder="Password" %}
+              {% render_field userForm.password class="form-control" placeholder="Пароль" %}
             </div>
             <div class="form-group">
-              {% render_field customerForm.address class="form-control" placeholder="Address" %}
+              {% render_field customerForm.address class="form-control" placeholder="Адрес" %}
             </div>
 
           </div>
         </div>
-        <button type="submit" class="btnSubmit">Update</button>
+        <button type="submit" class="btnSubmit">Обновить</button>
       </div>
     </div>
   </div>
