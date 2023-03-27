@@ -19,7 +19,7 @@ class ProductForm(forms.ModelForm):
         model = models.Product
         fields = ['name', 'price', 'description', 'product_image']
 
-#address of shipment
+#адрес отправления
 class AddressForm(forms.Form):
     Email = forms.EmailField()
     Mobile = forms.IntegerField()
@@ -30,13 +30,13 @@ class FeedbackForm(forms.ModelForm):
         model = models.Feedback
         fields = ['name', 'feedback']
 
-#for updating status of order
+#для обновления статуса заказа
 class OrderForm(forms.ModelForm):
     class Meta:
         model = models.Orders
         fields = ['status']
 
-#for contact us page
+#для страницы "свяжитесь с нами"
 class ContactusForm(forms.Form):
     Name = forms.CharField(max_length=30)
     Email = forms.EmailField()

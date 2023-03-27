@@ -20,7 +20,7 @@ def home_view(request):
     return render(request, 'ecom/index.html', {'products': products, 'product_count_in_cart': product_count_in_cart})
 
 
-#for showing login button for admin(by sumit)
+#для отображения кнопки входа для администратора
 def adminclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
@@ -46,13 +46,13 @@ def customer_signup_view(request):
         return HttpResponseRedirect('customerlogin')
     return render(request, 'ecom/customersignup.html', context=mydict)
 
-#-----------for checking user iscustomer
+#-----------Проверка пользователя в покупателях
 def is_customer(user):
     return user.groups.filter(name='CUSTOMER').exists()
 
 
 
-#---------AFTER ENTERING CREDENTIALS WE CHECK WHETHER USERNAME AND PASSWORD IS OF ADMIN,CUSTOMER
+#---------ПОСЛЕ ВВОДА УЧЕТНЫХ ДАННЫХ МЫ ПРОВЕРЯЕМ, ПРИНАДЛЕЖАТ ЛИ ИМЯ ПОЛЬЗОВАТЕЛЯ И ПАРОЛЬ АДМИНИСТРАТОРУ, КЛИЕНТУ
 def afterlogin_view(request):
     if is_customer(request.user):
         return redirect('customer-home')
@@ -60,16 +60,16 @@ def afterlogin_view(request):
         return redirect('admin-dashboard')
 
 #---------------------------------------------------------------------------------
-#------------------------ ADMIN RELATED VIEWS START ------------------------------
+#----------- ЗАПУСК ПРЕДСТАВЛЕНИЙ, СВЯЗАННЫХ С АДМИНИСТРАТОРОМ -------------------
 #---------------------------------------------------------------------------------
 @login_required(login_url='adminlogin')
 def admin_dashboard_view(request):
-    # for cards on dashboard
+    # для карточек на приборной панели
     customercount = models.Customer.objects.all().count()
     productcount = models.Product.objects.all().count()
     ordercount = models.Orders.objects.all().count()
 
-    # for recent order tables
+    # для последних таблиц заказов
     orders = models.Orders.objects.all()
     ordered_products = []
     ordered_bys = []
@@ -88,13 +88,13 @@ def admin_dashboard_view(request):
     return render(request, 'ecom/admin_dashboard.html', context=mydict)
 
 
-# admin view customer table
+# Просмотр таблицы клиентов
 @login_required(login_url='adminlogin')
 def view_customer_view(request):
     customers = models.Customer.objects.all()
     return render(request, 'ecom/view_customer.html', {'customers': customers})
 
-# admin delete customer
+# Удаление пользователя
 @login_required(login_url='adminlogin')
 def delete_customer_view(request, pk):
     customer = models.Customer.objects.get(id=pk)
@@ -110,7 +110,7 @@ def update_customer_view(request, pk):
     user = models.User.objects.get(id=customer.user_id)
     userForm = forms.CustomerUserForm(instance=user)
     customerForm = forms.CustomerForm(request.FILES, instance=customer)
-    mydict={'userForm': userForm, 'customerForm': customerForm}
+    mydict = {'userForm': userForm, 'customerForm': customerForm}
     if request.method =='POST':
         userForm = forms.CustomerUserForm(request.POST, instance=user)
         customerForm = forms.CustomerForm(request.POST, instance=customer)
@@ -122,14 +122,14 @@ def update_customer_view(request, pk):
             return redirect('view-customer')
     return render(request, 'ecom/admin_update_customer.html', context=mydict)
 
-# admin view the product
+# Просмотр продуктов
 @login_required(login_url='adminlogin')
 def admin_products_view(request):
     products = models.Product.objects.all()
     return render(request, 'ecom/admin_products.html', {'products': products})
 
 
-# admin add product by clicking on floating button
+# администратор добавляет товар
 @login_required(login_url='adminlogin')
 def admin_add_product_view(request):
     productForm = forms.ProductForm()
@@ -152,7 +152,7 @@ def delete_product_view(request, pk):
 def update_product_view(request, pk):
     product = models.Product.objects.get(id=pk)
     productForm = forms.ProductForm(instance=product)
-    if request.method =='POST':
+    if request.method == 'POST':
         productForm = forms.ProductForm(request.POST, request.FILES, instance=product)
         if productForm.is_valid():
             productForm.save()
@@ -179,12 +179,12 @@ def delete_order_view(request, pk):
     order.delete()
     return redirect('admin-view-booking')
 
-# for changing status of order (pending,delivered...)
+# Изменение статуса заказа
 @login_required(login_url='adminlogin')
 def update_order_view(request, pk):
     order = models.Orders.objects.get(id=pk)
     orderForm = forms.OrderForm(instance=order)
-    if request.method =='POST':
+    if request.method == 'POST':
         orderForm = forms.OrderForm(request.POST, instance=order)
         if orderForm.is_valid():
             orderForm.save()
@@ -192,19 +192,15 @@ def update_order_view(request, pk):
     return render(request, 'ecom/update_order.html', {'orderForm': orderForm})
 
 
-# admin view the feedback
+# Просмотр отзыва
 @login_required(login_url='adminlogin')
 def view_feedback_view(request):
     feedbacks = models.Feedback.objects.all().order_by('-id')
     return render(request, 'ecom/view_feedback.html', {'feedbacks': feedbacks})
 
 
-
-#---------------------------------------------------------------------------------
-#------------------------ PUBLIC CUSTOMER RELATED VIEWS START ---------------------
-#---------------------------------------------------------------------------------
 def search_view(request):
-    # whatever user write in search box we get in query
+    # все, что пользователь вводит в поле поиска, мы получаем в запросе
     query = request.GET['query']
     products = models.Product.objects.all().filter(name__icontains=query)
     if 'product_ids' in request.COOKIES:
@@ -214,7 +210,6 @@ def search_view(request):
     else:
         product_count_in_cart = 0
 
-    # word variable will be shown in html when user click on search button
     word = "Searched Result :"
 
     if request.user.is_authenticated:
@@ -222,11 +217,11 @@ def search_view(request):
     return render(request, 'ecom/index.html', {'products': products, 'word': word, 'product_count_in_cart': product_count_in_cart})
 
 
-# any one can add product to cart, no need of signin
+# любой желающий может добавить товар в корзину, не требуя регистрации
 def add_to_cart_view(request, pk):
     products = models.Product.objects.all()
 
-    #for cart counter, fetching products ids added by customer from cookies
+    #для счетчика корзины, извлекающего идентификаторы товаров, добавленные клиентом
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         counter = product_ids.split('|')
@@ -236,7 +231,7 @@ def add_to_cart_view(request, pk):
 
     response = render(request, 'ecom/index.html', {'products': products, 'product_count_in_cart': product_count_in_cart})
 
-    #adding product id to cookies
+    #добавление идентификатора продукта
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         if product_ids == "":
@@ -254,9 +249,8 @@ def add_to_cart_view(request, pk):
 
 
 
-# for checkout of cart
+# для оформления заказа в корзине
 def cart_view(request):
-    #for cart counter
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         counter = product_ids.split('|')
@@ -264,7 +258,7 @@ def cart_view(request):
     else:
         product_count_in_cart = 0
 
-    # fetching product details from db whose id is present in cookie
+    # Получение сведений о продукте из базы данных
     products = None
     total = 0
     if 'product_ids' in request.COOKIES:
@@ -273,14 +267,14 @@ def cart_view(request):
             product_id_in_cart = product_ids.split('|')
             products = models.Product.objects.all().filter(id__in=product_id_in_cart)
 
-            #for total price shown in cart
+            #Общая цена
             for p in products:
                 total = total+p.price
     return render(request, 'ecom/cart.html', {'products': products, 'total': total, 'product_count_in_cart': product_count_in_cart})
 
 
 def remove_from_cart_view(request, pk):
-    #for counter in cart
+    #Счетчик корзины
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         counter = product_ids.split('|')
@@ -288,7 +282,6 @@ def remove_from_cart_view(request, pk):
     else:
         product_count_in_cart = 0
 
-    # removing product id from cookie
     total = 0
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
@@ -300,7 +293,6 @@ def remove_from_cart_view(request, pk):
         for p in products:
             total = total+p.price
 
-        #  for update coookie value after removing product id in cart
         value = ""
         for i in range(len(product_id_in_cart)):
             if i == 0:
@@ -324,9 +316,6 @@ def send_feedback_view(request):
     return render(request, 'ecom/send_feedback.html', {'feedbackForm': feedbackForm})
 
 
-#---------------------------------------------------------------------------------
-#------------------------ CUSTOMER RELATED VIEWS START ------------------------------
-#---------------------------------------------------------------------------------
 @login_required(login_url='customerlogin')
 @user_passes_test(is_customer)
 def customer_home_view(request):
@@ -340,18 +329,15 @@ def customer_home_view(request):
     return render(request, 'ecom/customer_home.html', {'products': products, 'product_count_in_cart': product_count_in_cart})
 
 
-
-# shipment address before placing order
 @login_required(login_url='customerlogin')
 def customer_address_view(request):
-    # this is for checking whether product is present in cart or not
-    # if there is no product in cart we will not show address form
+    # Это делается для проверки того, присутствует товар в корзине или нет
+    # если товара в корзине нет, мы не будем показывать форму с адресом
     product_in_cart = False
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         if product_ids != "":
             product_in_cart = True
-    #for counter in cart
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         counter = product_ids.split('|')
@@ -363,14 +349,13 @@ def customer_address_view(request):
     if request.method == 'POST':
         addressForm = forms.AddressForm(request.POST)
         if addressForm.is_valid():
-            # here we are taking address, email, mobile at time of order placement
-            # we are not taking it from customer account table because
-            # these thing can be changes
+            # здесь мы указываем адрес, электронную почту, мобильный телефон во время оформления заказа
+            # мы не берем это из таблицы учета клиентов, потому что данные могут измениться
             email = addressForm.cleaned_data['Email']
-            mobile=addressForm.cleaned_data['Mobile']
+            mobile = addressForm.cleaned_data['Mobile']
             address = addressForm.cleaned_data['Address']
-            #for showing total price on payment page.....accessing id from cookies then fetching  price of product from db
-            total=0
+            #для отображения общей цены на странице оплаты ..... доступ к идентификатору , затем извлечение цены продукта из базы данных
+            total = 0
             if 'product_ids' in request.COOKIES:
                 product_ids = request.COOKIES['product_ids']
                 if product_ids != "":
@@ -384,48 +369,40 @@ def customer_address_view(request):
             response.set_cookie('mobile',mobile)
             response.set_cookie('address',address)
             return response
-    return render(request,'ecom/customer_address.html',{'addressForm':addressForm,'product_in_cart':product_in_cart,'product_count_in_cart':product_count_in_cart})
+    return render(request, 'ecom/customer_address.html', {'addressForm': addressForm, 'product_in_cart': product_in_cart, 'product_count_in_cart': product_count_in_cart})
 
 
 
-
-# here we are just directing to this view...actually we have to check whther payment is successful or not
-#then only this view should be accessed
 @login_required(login_url='customerlogin')
 def payment_success_view(request):
-    # Here we will place order | after successful payment
-    # we will fetch customer  mobile, address, Email
-    # we will fetch product id from cookies then respective details from db
-    # then we will create order objects and store in db
-    # after that we will delete cookies because after order placed...cart should be empty
-    customer=models.Customer.objects.get(user_id=request.user.id)
-    products=None
-    email=None
-    mobile=None
-    address=None
+    # Здесь мы разместим заказ | после успешной оплаты
+    # мы получим мобильный телефон клиента, адрес, электронную почту
+    # мы извлекем идентификатор продукта, а затем соответствующие данные из базы данных
+    # затем мы создадим объекты заказа и сохраним их в базе данных
+    # после этого мы удалим файлы cookie, потому что после размещения заказа корзина должна быть пустой
+    customer = models.Customer.objects.get(user_id=request.user.id)
+    products = None
+    email = None
+    mobile = None
+    address = None
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         if product_ids != "":
-            product_id_in_cart=product_ids.split('|')
-            products=models.Product.objects.all().filter(id__in = product_id_in_cart)
-            # Here we get products list that will be ordered by one customer at a time
+            product_id_in_cart = product_ids.split('|')
+            products = models.Product.objects.all().filter(id__in=product_id_in_cart)
+            # Здесь мы получаем список товаров, которые будут заказаны одним клиентом за раз
 
-    # these things can be change so accessing at the time of order...
     if 'email' in request.COOKIES:
-        email=request.COOKIES['email']
+        email = request.COOKIES['email']
     if 'mobile' in request.COOKIES:
-        mobile=request.COOKIES['mobile']
+        mobile = request.COOKIES['mobile']
     if 'address' in request.COOKIES:
-        address=request.COOKIES['address']
+        address = request.COOKIES['address']
 
-    # here we are placing number of orders as much there is a products
-    # suppose if we have 5 items in cart and we place order....so 5 rows will be created in orders table
-    # there will be lot of redundant data in orders table...but its become more complicated if we normalize it
     for product in products:
-        models.Orders.objects.get_or_create(customer=customer,product=product,status='Pending',email=email,mobile=mobile,address=address)
+        models.Orders.objects.get_or_create(customer=customer, product=product, status='Pending', email=email, mobile=mobile, address=address)
 
-    # after order placed cookies should be deleted
-    response = render(request,'ecom/payment_success.html')
+    response = render(request, 'ecom/payment_success.html')
     response.delete_cookie('product_ids')
     response.delete_cookie('email')
     response.delete_cookie('mobile')
@@ -438,19 +415,19 @@ def payment_success_view(request):
 @login_required(login_url='customerlogin')
 @user_passes_test(is_customer)
 def my_order_view(request):
-    customer=models.Customer.objects.get(user_id=request.user.id)
-    orders=models.Orders.objects.all().filter(customer_id = customer)
-    ordered_products=[]
+    customer = models.Customer.objects.get(user_id=request.user.id)
+    orders = models.Orders.objects.all().filter(customer_id=customer)
+    ordered_products = []
     for order in orders:
-        ordered_product=models.Product.objects.all().filter(id=order.product.id)
+        ordered_product = models.Product.objects.all().filter(id=order.product.id)
         ordered_products.append(ordered_product)
 
-    return render(request,'ecom/my_order.html',{'data':zip(ordered_products,orders)})
+    return render(request, 'ecom/my_order.html', {'data': zip(ordered_products, orders)})
 
 
 
 
-#--------------for discharge patient bill (pdf) download and printing
+#--------------счет за выписку (pdf) для загрузки и печати
 import io
 from xhtml2pdf import pisa
 from django.template.loader import get_template
@@ -469,27 +446,25 @@ def render_to_pdf(template_src, context_dict):
 
 @login_required(login_url='customerlogin')
 @user_passes_test(is_customer)
-def download_invoice_view(request,orderID,productID):
-    order=models.Orders.objects.get(id=orderID)
-    product=models.Product.objects.get(id=productID)
-    mydict={
-        'orderDate':order.order_date,
-        'customerName':request.user,
-        'customerEmail':order.email,
-        'customerMobile':order.mobile,
-        'shipmentAddress':order.address,
-        'orderStatus':order.status,
+def download_invoice_view(request, orderID, productID):
+    order = models.Orders.objects.get(id=orderID)
+    product = models.Product.objects.get(id=productID)
+    mydict = {
+        'orderDate': order.order_date,
+        'customerName': request.user,
+        'customerEmail': order.email,
+        'customerMobile': order.mobile,
+        'shipmentAddress': order.address,
+        'orderStatus': order.status,
 
-        'productName':product.name,
-        'productImage':product.product_image,
-        'productPrice':product.price,
-        'productDescription':product.description,
+        'productName': product.name,
+        'productImage': product.product_image,
+        'productPrice': product.price,
+        'productDescription': product.description,
 
 
     }
-    return render_to_pdf('ecom/download_invoice.html',mydict)
-
-
+    return render_to_pdf('ecom/download_invoice.html', mydict)
 
 
 
@@ -498,35 +473,32 @@ def download_invoice_view(request,orderID,productID):
 @user_passes_test(is_customer)
 def my_profile_view(request):
     customer = models.Customer.objects.get(user_id=request.user.id)
-    return render(request, 'ecom/my_profile.html', {'customer':customer})
+    return render(request, 'ecom/my_profile.html', {'customer': customer})
 
 
 @login_required(login_url='customerlogin')
 @user_passes_test(is_customer)
 def edit_profile_view(request):
-    customer=models.Customer.objects.get(user_id=request.user.id)
-    user=models.User.objects.get(id=customer.user_id)
-    userForm=forms.CustomerUserForm(instance=user)
-    customerForm=forms.CustomerForm(request.FILES,instance=customer)
-    mydict={'userForm':userForm,'customerForm':customerForm}
-    if request.method=='POST':
-        userForm=forms.CustomerUserForm(request.POST,instance=user)
-        customerForm=forms.CustomerForm(request.POST,instance=customer)
+    customer = models.Customer.objects.get(user_id=request.user.id)
+    user = models.User.objects.get(id=customer.user_id)
+    userForm = forms.CustomerUserForm(instance=user)
+    customerForm = forms.CustomerForm(request.FILES, instance=customer)
+    mydict={'userForm': userForm, 'customerForm': customerForm}
+    if request.method =='POST':
+        userForm = forms.CustomerUserForm(request.POST, instance=user)
+        customerForm = forms.CustomerForm(request.POST, instance=customer)
         if userForm.is_valid() and customerForm.is_valid():
-            user=userForm.save()
+            user = userForm.save()
             user.set_password(user.password)
             user.save()
             customerForm.save()
             return HttpResponseRedirect('my-profile')
-    return render(request,'ecom/edit_profile.html',context=mydict)
+    return render(request, 'ecom/edit_profile.html', context=mydict)
 
 
 
-#---------------------------------------------------------------------------------
-#------------------------ ABOUT US AND CONTACT US VIEWS START --------------------
-#---------------------------------------------------------------------------------
 def aboutus_view(request):
-    return render(request,'ecom/aboutus.html')
+    return render(request, 'ecom/aboutus.html')
 
 def contactus_view(request):
     sub = forms.ContactusForm()
@@ -534,8 +506,8 @@ def contactus_view(request):
         sub = forms.ContactusForm(request.POST)
         if sub.is_valid():
             email = sub.cleaned_data['Email']
-            name=sub.cleaned_data['Name']
+            name = sub.cleaned_data['Name']
             message = sub.cleaned_data['Message']
-            send_mail(str(name)+' || '+str(email),message, settings.EMAIL_HOST_USER, settings.EMAIL_RECEIVING_USER, fail_silently = False)
+            send_mail(str(name)+' || '+str(email), message, settings.EMAIL_HOST_USER, settings.EMAIL_RECEIVING_USER, fail_silently=False)
             return render(request, 'ecom/contactussuccess.html')
-    return render(request, 'ecom/contactus.html', {'form':sub})
+    return render(request, 'ecom/contactus.html', {'form': sub})
