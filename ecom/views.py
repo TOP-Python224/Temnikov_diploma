@@ -20,7 +20,7 @@ def home_view(request):
     return render(request, 'ecom/index.html', {'products': products, 'product_count_in_cart': product_count_in_cart})
 
 
-#для отображения кнопки входа для администратора
+#Отображения кнопки входа для администратора
 def adminclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
@@ -243,7 +243,7 @@ def add_to_cart_view(request, pk):
         response.set_cookie('product_ids', pk)
 
     product = models.Product.objects.get(id=pk)
-    messages.info(request, product.name + ' added to cart successfully!')
+    messages.info(request, product.name + ' успешно добавлен в корзину!')
 
     return response
 
@@ -289,7 +289,7 @@ def remove_from_cart_view(request, pk):
         product_id_in_cart = list(set(product_id_in_cart))
         product_id_in_cart.remove(str(pk))
         products = models.Product.objects.all().filter(id__in=product_id_in_cart)
-        #for total price shown in cart after removing product
+
         for p in products:
             total = total+p.price
 
@@ -354,20 +354,21 @@ def customer_address_view(request):
             email = addressForm.cleaned_data['Email']
             mobile = addressForm.cleaned_data['Mobile']
             address = addressForm.cleaned_data['Address']
-            #для отображения общей цены на странице оплаты ..... доступ к идентификатору , затем извлечение цены продукта из базы данных
+            #для отображения общей цены на странице оплаты
+            #доступ к идентификатору , затем извлечение цены продукта из базы данных
             total = 0
             if 'product_ids' in request.COOKIES:
                 product_ids = request.COOKIES['product_ids']
                 if product_ids != "":
-                    product_id_in_cart=product_ids.split('|')
-                    products=models.Product.objects.all().filter(id__in = product_id_in_cart)
+                    product_id_in_cart = product_ids.split('|')
+                    products = models.Product.objects.all().filter(id__in=product_id_in_cart)
                     for p in products:
-                        total=total+p.price
+                        total = total+p.price
 
-            response = render(request, 'ecom/payment.html',{'total':total})
-            response.set_cookie('email',email)
-            response.set_cookie('mobile',mobile)
-            response.set_cookie('address',address)
+            response = render(request, 'ecom/payment.html', {'total': total})
+            response.set_cookie('email', email)
+            response.set_cookie('mobile', mobile)
+            response.set_cookie('address', address)
             return response
     return render(request, 'ecom/customer_address.html', {'addressForm': addressForm, 'product_in_cart': product_in_cart, 'product_count_in_cart': product_count_in_cart})
 
